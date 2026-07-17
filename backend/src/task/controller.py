@@ -2,13 +2,15 @@ from src.task.dtos import task_schema
 from sqlalchemy.orm import Session
 from src.task.models import TaskModel
 from fastapi import HTTPException
+from src.user.models import userModel
 
-
-def create_task(body:task_schema,db:Session):
+def create_task(body:task_schema,db:Session,user:userModel):
     data= body.model_dump()
     new_task = TaskModel(title = data["title"],
                         description = data["description"],
-                        is_completed = data["is_completed"])
+                        is_completed = data["is_completed"],
+                        user_id = user.id
+                        )
     
     db.add(new_task)
     db.commit()
@@ -16,8 +18,8 @@ def create_task(body:task_schema,db:Session):
     return {"status":"task created sucessfully...",
             "data":new_task}
 
-def get_tasks(db:Session):
-    tasks = db.query(TaskModel).all()
+def get_tasks(db:Session,user:userModel):
+    tasks = db.query(TaskModel).filter(TaskModel.user_id == user.id).all()
     return{"status ":"success",
         "data":tasks}
 
@@ -28,11 +30,14 @@ def get_one_task(task_id:int,db:Session):
     return{"status":"success",
         "data": one_task}
 
-def update_task(body:task_schema,task_id:int,db:Session):
-    one_task = db.query(TaskModel).get(task_id)
+def update_task(body:task_schema,task_id:int,db:Session,user:userModel):
+    one_task:TaskModel = db.query(TaskModel).get(task_id)
     if not one_task:
         raise HTTPException(404,detail="task id is incorrect")
     
+    if one_task.user_id != user.id:
+        raise HTTPException(401,"not authorised")
+
     body = body.model_dump()
     for field,value in body.items():
         setattr(one_task,field,value)
@@ -46,10 +51,14 @@ def update_task(body:task_schema,task_id:int,db:Session):
         "data": one_task
     }
 
-def delete_task(task_id:int,db:Session):
-    one_task = db.query(TaskModel).get(task_id)
+def delete_task(task_id:int,db:Session,user:userModel):
+    one_task:TaskModel = db.query(TaskModel).get(task_id)
     if not one_task:
         raise HTTPException(404,detail="task id is incorrect")
+    
+    if one_task.user_id != user.id:
+        raise HTTPException(401,"not authorised")
+
     
     db.delete(one_task)
     db.commit()

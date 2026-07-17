@@ -1,5 +1,5 @@
 
-from fastapi import FastAPI,status,HTTPException,Request
+from fastapi import FastAPI,status,HTTPException,Request,Depends
 import jwt
 from jwt.exceptions import InvalidTokenError
 from src.user.models import userModel
@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from src.utils.settings import settings
 from src.utils.db import get_db
 
-def is_auth(request:Request,db:Session):
+def is_auth(request:Request,db:Session=Depends(get_db)):
     try:
         token = request.headers.get("authorization")
         token = token.split(" ")[-1]
