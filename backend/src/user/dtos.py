@@ -17,4 +17,4 @@ class user_response_schema(BaseModel):
 
 class login_schema(BaseModel):
     username:str
-    hash_password:str
+    password:str

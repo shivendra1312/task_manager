@@ -53,7 +53,7 @@ def user_login(body:login_schema,db:Session):
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="entered wrong username")
     
-    if not verify_password(body.hash_password,user.hash_password):
+    if not verify_password(body.password, user.hash_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="entered wrong password")
     
     exp_time = datetime.now() + timedelta(minutes=settings.EXP_TIME)
