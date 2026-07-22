@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import { useNavigate } from "react-router-dom";
+import EditTaskModal from "../components/EditTaskModal";
+import toast from "react-hot-toast";
+import TaskCard from "../components/TaskCard";
 
 function Dashboard() {
     const [user, setUser] = useState(null);
@@ -8,27 +11,70 @@ function Dashboard() {
     const [description, setDescription] = useState("");
     const [isCompleted, setIsCompleted] = useState(false);
     const [tasks, setTasks] = useState([]);
+    const [search, setSearch] = useState("");
+
+    const [editingTask, setEditingTask] = useState(null);
+    const [filter, setFilter] = useState("all");
 
     const navigate = useNavigate();
 
-    useEffect(() => {
-        async function fetchUser() {
-            try {
-                const token = localStorage.getItem("token");
+    async function fetchTask() {
 
-                const response = await api.get("/user/is_auth");
+        try {
+            
 
-                setUser(response.data);
-            } catch (error) {
-                if (error.response?.status === 401) {
-                    localStorage.removeItem("token");
-                    navigate("/login");
-                    return;
-                }
+            const response = await api.get("/tasks/all_tasks");
 
-                console.log(error);
+            setTasks(response.data.data);
+
+        } catch (error) {
+            if (error.response?.status === 401) {
+                localStorage.removeItem("token");
+                navigate("/login");
+                return;
             }
+
+            console.log(error);
         }
+
+    }
+
+    async function fetchUser() {
+        try {
+            
+            const response = await api.get("/user/is_auth");
+
+            setUser(response.data);
+        } catch (error) {
+            if (error.response?.status === 401) {
+                localStorage.removeItem("token");
+                navigate("/login");
+                return;
+            }
+
+            console.log(error);
+        }
+    }
+
+    async function handleDeleteTask(taskId) {
+        try {
+            await api.delete(`/tasks/delete_task/${taskId}`);
+
+            await fetchTask();
+            toast.success("Task Deleted Successfully");
+        } catch (error) {
+            toast.error("Failed to delete task");
+            if (error.response?.status === 401) {
+                localStorage.removeItem("token");
+                navigate("/login");
+                return;
+            }
+
+            console.log(error);
+        }
+    }
+    useEffect(() => {
+
 
         fetchUser();
     }, [navigate]);
@@ -39,26 +85,7 @@ function Dashboard() {
     }
 
     useEffect(() => {
-        async function fetchTask() {
 
-            try {
-                const token = localStorage.getItem("token");
-
-                const response = await api.get("/tasks/all_tasks");
-
-                setTasks(response.data.data);
-                
-            } catch (error) {
-                if (error.response?.status === 401) {
-                    localStorage.removeItem("token");
-                    navigate("/login");
-                    return;
-                }
-
-                console.log(error);
-            }
-
-        }
 
         fetchTask()
     }, [])
@@ -76,16 +103,21 @@ function Dashboard() {
                 }
             );
 
-            console.log(response.data);
+
 
             setTitle("");
             setDescription("");
             setIsCompleted(false);
 
+            await fetchTask();
+            toast.success("Task Created Successfully");
+
         } catch (error) {
+            toast.error("Failed to create task");
             if (error.response?.status === 401) {
                 localStorage.removeItem("token");
                 navigate("/login");
+
                 return;
             }
 
@@ -96,13 +128,50 @@ function Dashboard() {
     if (!user) {
         return <h1 className="text-white">Loading...</h1>;
     }
+    async function handleToggleComplete(task) {
+        try {
+            await api.put(`/tasks/update_task/${task.id}`, {
+                title: task.title,
+                description: task.description,
+                is_completed: !task.is_completed
+            });
+
+            await fetchTask();
+            await fetchTask();
+
+toast.success(
+    !task.is_completed
+        ? "Task Completed 🎉"
+        : "Task Marked as Pending"
+);
 
 
+        } catch (error) {
+            toast.error("Failed to update task");
+            console.log(error);
+        }
 
+    }
+
+    const filteredTasks = tasks.filter((task) => {
+
+        const matchesSearch =
+            task.title.toLowerCase().includes(search.toLowerCase());
+
+        const matchesFilter =
+            filter === "all"
+                ? true
+                : filter === "completed"
+                    ? task.is_completed
+                    : !task.is_completed;
+
+        return matchesSearch && matchesFilter;
+    });
 
     return (
         <div className="min-h-screen bg-slate-900 text-white p-10">
             <h1 className="text-3xl font-bold">Dashboard</h1>
+
 
             <h2>Name: {user.name}</h2>
             <h2>Username: {user.username}</h2>
@@ -132,22 +201,42 @@ function Dashboard() {
 
 
             </div>
+            <div className=" flex">
+                <input
+                    type="text"
+                    placeholder="Search Task..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full p-3 m-5 rounded-lg bg-slate-800 border border-gray-700 text-white"
+                />
+                <select
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
+                    className="bg-slate-800 text-white border m-5 border-gray-700 rounded-lg px-3 py-2"
+                >
+                    <option value="all">All</option>
+                    <option value="completed">Completed</option>
+                    <option value="pending">Pending</option>
+                </select>
+            </div>
             <div className="mt-8">
-                {tasks.map((task) => (
-                    <div
-                        key={task.id}
-                        className="border border-gray-600 rounded-lg p-4 mb-4"
-                    >
-                        <h3>{task.title}</h3>
-                        <p>{task.description}</p>
-                        <p>
-                            {task.is_completed ? "Completed" : "Pending"}
-                        </p>
-                    </div>
+                {filteredTasks.map((task) => (
+                    <TaskCard
+        key={task.id}
+        task={task}
+        handleDeleteTask={handleDeleteTask}
+        handleToggleComplete={handleToggleComplete}
+        setEditingTask={setEditingTask}
+    />
                 ))}
             </div>
-
-        </div>
+            {editingTask && (
+                <EditTaskModal
+                    task={editingTask}
+                    onClose={() => setEditingTask(null)}
+                    fetchTask={fetchTask}
+                />
+            )}        </div>
     );
 }
 
