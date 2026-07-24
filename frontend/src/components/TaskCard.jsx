@@ -21,12 +21,17 @@ function TaskCard({
     const today = new Date();
 today.setHours(0, 0, 0, 0);
 
-const due = new Date(task.due_date);
-due.setHours(0, 0, 0, 0);
+let daysLeft = null;
 
-const diff = due - today;
+if (task.due_date) {
+    const due = new Date(task.due_date);
+    due.setHours(0, 0, 0, 0);
 
-const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    const diff = due - today;
+    daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+
     return (
         <div className="bg-slate-800 rounded-xl p-5 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
             <span
@@ -64,29 +69,23 @@ const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
                     </div>
                 )
             }
-            {
-    daysLeft > 0 && (
-        <p className="text-green-400">
-            ⏳ {daysLeft} days left
-        </p>
-    )
-}
+           {daysLeft !== null && daysLeft > 0 && (
+    <p className="text-green-400">
+        ⏳ {daysLeft} days left
+    </p>
+)}
 
-{
-    daysLeft === 0 && (
-        <p className="text-yellow-400">
-            📅 Due Today
-        </p>
-    )
-}
+{daysLeft !== null && daysLeft === 0 && (
+    <p className="text-yellow-400">
+        📅 Due Today
+    </p>
+)}
 
-{
-    daysLeft < 0 && (
-        <p className="text-red-400">
-            ❌ Overdue by {Math.abs(daysLeft)} days
-        </p>
-    )
-}
+{daysLeft !== null && daysLeft < 0 && (
+    <p className="text-red-400">
+        ❌ Overdue by {Math.abs(daysLeft)} days
+    </p>
+)}
             {/* Status */}
             <div className="flex items-center gap-3 mt-5">
                 <input

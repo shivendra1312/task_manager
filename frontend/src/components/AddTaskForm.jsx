@@ -3,8 +3,8 @@ function AddTaskForm({
     setTitle,
     description,
     setDescription,
-    priority,
-    setPriority,
+    taskPriority,
+    setTaskPriority,
     dueDate,
     setDueDate,
     handleAddTask,
@@ -39,8 +39,8 @@ function AddTaskForm({
                     </label>
 
                     <select
-                        value={priority}
-                        onChange={(e) => setPriority(e.target.value)}
+                        value={taskPriority}
+                        onChange={(e) => setTaskPriority(e.target.value)}
                         className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                         <option value="low">🟢 Low</option>

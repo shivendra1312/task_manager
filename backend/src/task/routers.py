@@ -12,9 +12,19 @@ task_routes = APIRouter(prefix="/tasks",)
 def create_task(body:task_schema,db:Session = Depends(get_db), user:userModel = Depends(is_auth)):
     return controller.create_task(body,db,user)
 
-@task_routes.get("/all_tasks",status_code=status.HTTP_200_OK)
-def get_tasks(db:Session = Depends(get_db),user:userModel = Depends(is_auth)):
-    return controller.get_tasks(db,user)
+@task_routes.get("/all_tasks", status_code=status.HTTP_200_OK)
+def get_tasks(
+    page: int = 1,
+    limit: int = 10,
+    sort_by: str = "id",
+    order: str = "desc",
+    db: Session = Depends(get_db),
+    user: userModel = Depends(is_auth),
+    search: str = "",
+    status: str = "all",
+    priority: str = "all"
+):
+    return controller.get_tasks(db, user, page, limit,sort_by,order,search,status,priority)
 
 @task_routes.get("/get_one_task/{task_id}",status_code=status.HTTP_200_OK)
 def get_one_task(task_id:int ,db:Session = Depends(get_db),user:userModel = Depends(is_auth)):

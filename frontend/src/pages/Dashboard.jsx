@@ -11,6 +11,9 @@ import AddTaskForm from "../components/AddTaskForm";
 import SearchFilter from "../components/SearchFilter";
 import EmptyState from "../components/EmptyState";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
+import Pagination from "../components/Pagination";
+import Sorting from "../components/Sorting";
+
 function Dashboard() {
     const [user, setUser] = useState(null);
     const [title, setTitle] = useState("");
@@ -22,19 +25,38 @@ function Dashboard() {
     const [filter, setFilter] = useState("all");
     const [isLoading, setIsLoading] = useState(false);
     const [deleteTask, setDeleteTask] = useState(null);
-    const [priority, setPriority] = useState("medium");
+    const [taskPriority, setTaskPriority] = useState("medium");
     const [dueDate, setDueDate] = useState("");
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
+
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalTasks, setTotalTasks] = useState(0);
+
+    const [sortBy, setSortBy] = useState("id");
+    const [order, setOrder] = useState("desc");
+    const [priority, setPriority] = useState("all");
 
     const navigate = useNavigate();
 
     async function fetchTask() {
-
         try {
+            const response = await api.get("/tasks/all_tasks", {
+                params: {
+                    page,
+                    limit,
+                    search,
+                    status: filter,
+                    priority,
+                    sort_by: sortBy,
+                    order,
 
-
-            const response = await api.get("/tasks/all_tasks");
+                },
+            });
 
             setTasks(response.data.data);
+            setTotalPages(response.data.total_pages);
+            setTotalTasks(response.data.total_tasks);
 
         } catch (error) {
             if (error.response?.status === 401) {
@@ -45,7 +67,6 @@ function Dashboard() {
 
             console.log(error);
         }
-
     }
 
     async function fetchUser() {
@@ -95,10 +116,8 @@ function Dashboard() {
     }
 
     useEffect(() => {
-
-
-        fetchTask()
-    }, [])
+    fetchTask();
+}, [page, limit, search, filter, priority, sortBy, order]);
 
     async function handleAddTask() {
 
@@ -116,15 +135,15 @@ function Dashboard() {
             await api.post("/tasks/create", {
                 title,
                 description,
-                priority,
-                due_date: dueDate,
+                priority: taskPriority,
+                due_date: dueDate || null,
                 is_completed: isCompleted,
             });
 
             setTitle("");
             setDescription("");
-            setPriority("medium");
-            setDueDate("");
+            setTaskPriority("medium");
+            setDueDate(null);
             setIsCompleted(false);
 
             await fetchTask();
@@ -176,21 +195,8 @@ function Dashboard() {
 
     }
 
-    const filteredTasks = tasks.filter((task) => {
 
-        const matchesSearch =
-            task.title.toLowerCase().includes(search.toLowerCase());
 
-        const matchesFilter =
-            filter === "all"
-                ? true
-                : filter === "completed"
-                    ? task.is_completed
-                    : !task.is_completed;
-
-        return matchesSearch && matchesFilter;
-    });
-    const totalTasks = tasks.length;
 
     const completedTasks = tasks.filter(
         (task) => task.is_completed
@@ -213,20 +219,31 @@ function Dashboard() {
                 setTitle={setTitle}
                 description={description}
                 setDescription={setDescription}
-                priority={priority}
-                setPriority={setPriority}
+                taskPriority={taskPriority}
+                setTaskPriority={setTaskPriority}
                 dueDate={dueDate}
                 setDueDate={setDueDate}
                 handleAddTask={handleAddTask}
                 isLoading={isLoading}
 
             />
-            <SearchFilter
-                search={search}
-                setSearch={setSearch}
-                filter={filter}
-                setFilter={setFilter}
-            />
+            <div className="mt-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <SearchFilter
+    search={search}
+    setSearch={setSearch}
+    filter={filter}
+    setFilter={setFilter}
+    priority={priority}
+    setPriority={setPriority}
+/>
+
+                <Sorting
+                    sortBy={sortBy}
+                    setSortBy={setSortBy}
+                    order={order}
+                    setOrder={setOrder}
+                />
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
                 <StatsCard
                     title="Total Tasks"
@@ -252,30 +269,31 @@ function Dashboard() {
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
             </div>{
-                tasks.length === 0 ? (
-                    <EmptyState
-                        title="No Tasks Yet"
-                        message="Create your first task to get started."
-                    />
-                ) : filteredTasks.length === 0 ? (
-                    <EmptyState
-                        title="No Matching Tasks"
-                        message="Try a different search or filter."
-                    />
-                ) : (
-                    <div className="mt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {filteredTasks.map((task) => (
-                            <TaskCard
-                                key={task.id}
-                                task={task}
-                                setDeleteTask={setDeleteTask}
-                                handleToggleComplete={handleToggleComplete}
-                                setEditingTask={setEditingTask}
-                            />
-                        ))}
-                    </div>
-                )
-            }
+    tasks.length === 0 ? (
+        <EmptyState
+            title="No Tasks Yet"
+            message="Create your first task to get started."
+        />
+    ) : (
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {tasks.map((task) => (
+                <TaskCard
+                    key={task.id}
+                    task={task}
+                    setDeleteTask={setDeleteTask}
+                    handleToggleComplete={handleToggleComplete}
+                    setEditingTask={setEditingTask}
+                />
+            ))}
+        </div>
+    )
+}
+
+            <Pagination
+                page={page}
+                totalPages={totalPages}
+                setPage={setPage}
+            />
             {editingTask && (
                 <EditTaskModal
                     task={editingTask}
