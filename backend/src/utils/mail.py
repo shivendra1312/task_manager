@@ -1,14 +1,14 @@
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from pydantic import EmailStr, BaseModel
 from typing import List
-
+from src.utils.settings import settings
 class EmailSchema(BaseModel):
     email: List[EmailStr]
 
 conf = ConnectionConfig(
-    MAIL_USERNAME = "shivendrasharma6144@gmail.com",
-    MAIL_PASSWORD = "rslm jtgx bajy hgsy",
-    MAIL_FROM = "shivendrasharma6144@gmail.com",
+    MAIL_USERNAME=settings.MAIL_USERNAME,
+    MAIL_PASSWORD=settings.MAIL_PASSWORD,
+    MAIL_FROM=settings.MAIL_FROM,
     MAIL_PORT = 587,
     MAIL_SERVER = "smtp.gmail.com",
     MAIL_FROM_NAME="task_manager",
