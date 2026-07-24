@@ -83,6 +83,7 @@ function EditTaskModal({ task, onClose, fetchTask }) {
     <input
         type="date"
         value={dueDate}
+        min={new Date().toISOString().split("T")[0]}
         onChange={(e) => setDueDate(e.target.value)}
         className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
     />

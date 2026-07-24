@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import { Toaster } from "react-hot-toast";
+import Register from "./pages/Register";
 function App() {
   return (
     <>
@@ -19,6 +20,15 @@ function App() {
         <PublicRoute>
           <Login />
         </PublicRoute>} />
+
+        <Route
+    path="/register"
+    element={
+      <PublicRoute>
+        <Register />
+      </PublicRoute>
+    }
+  />
       <Route
         path="/dashboard"
         element={

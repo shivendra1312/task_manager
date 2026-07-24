@@ -1,6 +1,8 @@
 import { useState } from "react";
 import api from "../services/api";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+
 function Login() {
     const navigate = useNavigate();
     const [username, setUsername] = useState("");
@@ -23,10 +25,12 @@ function Login() {
                     Authorization: `Bearer ${token}`,
                 },
             });
+            toast.success("Login Successful");
             console.log(response.data);
             console.log(authResponse.data)
         } catch (error) {
-            console.log(error.response.data)
+            toast.error(error.response?.data?.detail || "Login Failed");
+            
         }
 
     }
@@ -56,6 +60,15 @@ function Login() {
 
 
                 <button type="button" onClick={handleLogin} className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition">Login</button>
+                <p className="text-center text-gray-400 mt-5">
+    Don't have an account?{" "}
+    <Link
+        to="/register"
+        className="text-blue-400 hover:text-blue-300 font-medium"
+    >
+        Create Account
+    </Link>
+</p>
             </div>
         </div>
     )

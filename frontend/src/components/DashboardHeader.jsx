@@ -1,26 +1,17 @@
 function DashboardHeader({ user }) {
     const hour = new Date().getHours();
-
-    let greeting = "Hello";
-
-    if (hour < 12) {
-        greeting = "Good Morning";
-    } else if (hour < 18) {
-        greeting = "Good Afternoon";
-    } else {
-        greeting = "Good Evening";
-    }
+    const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
     return (
-        <div className="mt-8 mb-8">
-            <h1 className="text-4xl font-bold text-white">
-                👋 {greeting}, {user.name}
-            </h1>
-
-            <p className="text-gray-400 mt-2 text-lg">
-                Stay productive! Manage your tasks efficiently.
+        <section className="mb-8 pt-2 sm:mb-10">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-400">Workspace overview</p>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                <span aria-hidden="true">👋 </span>{greeting}, {user.name}
+            </h2>
+            <p className="mt-3 max-w-2xl text-base leading-7 text-slate-400">
+                Stay productive and manage your tasks efficiently.
             </p>
-        </div>
+        </section>
     );
 }
 
