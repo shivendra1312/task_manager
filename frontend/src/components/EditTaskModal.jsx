@@ -5,12 +5,16 @@ import toast from "react-hot-toast";
 function EditTaskModal({ task, onClose, fetchTask }) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
+    const [priority, setPriority] = useState("medium");
     const [isCompleted, setIsCompleted] = useState(false);
+    const [dueDate, setDueDate] = useState("");
 
     useEffect(() => {
         if (task) {
             setTitle(task.title);
             setDescription(task.description);
+            setPriority(task.priority);
+            setDueDate(task.due_date || "");
             setIsCompleted(task.is_completed);
         }
     }, [task]);
@@ -20,6 +24,8 @@ function EditTaskModal({ task, onClose, fetchTask }) {
             await api.put(`/tasks/update_task/${task.id}`, {
                 title,
                 description,
+                priority,
+                due_date: dueDate,
                 is_completed: isCompleted,
             });
 
@@ -45,6 +51,7 @@ function EditTaskModal({ task, onClose, fetchTask }) {
                 <input
                     className="w-full border p-2 rounded mb-3"
                     value={title}
+                    min={new Date().toISOString().split("T")[0]}
                     onChange={(e) => setTitle(e.target.value)}
                 />
 
@@ -53,6 +60,33 @@ function EditTaskModal({ task, onClose, fetchTask }) {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                 />
+                <div className="mb-3 bg-gray-800 ">
+    <label className="block mb-2 font-medium">
+        Priority
+    </label>
+
+    <select
+        value={priority}
+        onChange={(e) => setPriority(e.target.value)}
+        className="w-full border p-2 rounded bg-gray-800"
+    >
+        <option value="low">🟢 Low</option>
+        <option value="medium">🟡 Medium</option>
+        <option value="high">🔴 High</option>
+    </select>
+</div>
+<div>
+    <label className="block text-gray-300 mb-2 font-medium">
+        Due Date
+    </label>
+
+    <input
+        type="date"
+        value={dueDate}
+        onChange={(e) => setDueDate(e.target.value)}
+        className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+</div>
 
                 <label className="flex gap-2 mb-5">
                     <input

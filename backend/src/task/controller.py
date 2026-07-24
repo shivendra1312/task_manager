@@ -8,6 +8,8 @@ def create_task(body:task_schema,db:Session,user:userModel):
     data= body.model_dump()
     new_task = TaskModel(title = data["title"],
                         description = data["description"],
+                        priority=data["priority"],
+                        due_date=data["due_date"],
                         is_completed = data["is_completed"],
                         user_id = user.id
                         )

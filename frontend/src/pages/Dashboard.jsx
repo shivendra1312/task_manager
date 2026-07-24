@@ -18,11 +18,12 @@ function Dashboard() {
     const [isCompleted, setIsCompleted] = useState(false);
     const [tasks, setTasks] = useState([]);
     const [search, setSearch] = useState("");
-
     const [editingTask, setEditingTask] = useState(null);
     const [filter, setFilter] = useState("all");
     const [isLoading, setIsLoading] = useState(false);
     const [deleteTask, setDeleteTask] = useState(null);
+    const [priority, setPriority] = useState("medium");
+    const [dueDate, setDueDate] = useState("");
 
     const navigate = useNavigate();
 
@@ -101,47 +102,51 @@ function Dashboard() {
 
     async function handleAddTask() {
 
-    if (!title.trim()) {
-        toast.error("Title is required");
-        return;
-    }
-
-    
-
-    setIsLoading(true);
-
-    try {
-
-        await api.post("/tasks/create", {
-            title,
-            description,
-            is_completed: isCompleted,
-        });
-
-        setTitle("");
-        setDescription("");
-        setIsCompleted(false);
-
-        await fetchTask();
-
-        toast.success("Task Created Successfully");
-
-    } catch (error) {
-
-        toast.error("Failed to create task");
-
-        if (error.response?.status === 401) {
-            localStorage.removeItem("token");
-            navigate("/login");
+        if (!title.trim()) {
+            toast.error("Title is required");
             return;
         }
 
-        console.log(error);
 
-    } finally {
-        setIsLoading(false);
+
+        setIsLoading(true);
+
+        try {
+
+            await api.post("/tasks/create", {
+                title,
+                description,
+                priority,
+                due_date: dueDate,
+                is_completed: isCompleted,
+            });
+
+            setTitle("");
+            setDescription("");
+            setPriority("medium");
+            setDueDate("");
+            setIsCompleted(false);
+
+            await fetchTask();
+
+            toast.success("Task Created Successfully");
+
+        } catch (error) {
+
+            toast.error("Failed to create task");
+
+            if (error.response?.status === 401) {
+                localStorage.removeItem("token");
+                navigate("/login");
+                return;
+            }
+
+            console.log(error);
+
+        } finally {
+            setIsLoading(false);
+        }
     }
-}
 
     if (!user) {
         return <h1 className="text-white">Loading...</h1>;
@@ -208,8 +213,13 @@ function Dashboard() {
                 setTitle={setTitle}
                 description={description}
                 setDescription={setDescription}
+                priority={priority}
+                setPriority={setPriority}
+                dueDate={dueDate}
+                setDueDate={setDueDate}
                 handleAddTask={handleAddTask}
                 isLoading={isLoading}
+
             />
             <SearchFilter
                 search={search}
@@ -240,18 +250,7 @@ function Dashboard() {
                 />
             </div>
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {
 
-                    filteredTasks.map((task) => (
-                        <TaskCard
-                            key={task.id}
-                            task={task}
-                            setEditingTask={setEditingTask}
-                            handleToggleComplete={handleToggleComplete}
-                            setEditingTask={setEditingTask}
-                            
-                        />
-                    ))}
             </div>{
                 tasks.length === 0 ? (
                     <EmptyState
@@ -285,16 +284,16 @@ function Dashboard() {
                 />
             )}
             {
-    deleteTask && (
-        <DeleteConfirmationModal
-            task={deleteTask}
-            onClose={() => setDeleteTask(null)}
-            onDelete={handleDeleteTask}
-        />
-    )
-}
-            
-                    </div>
+                deleteTask && (
+                    <DeleteConfirmationModal
+                        task={deleteTask}
+                        onClose={() => setDeleteTask(null)}
+                        onDelete={handleDeleteTask}
+                    />
+                )
+            }
+
+        </div>
     );
 }
 
