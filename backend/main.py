@@ -14,11 +14,16 @@ base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 # Allows the React development server to call this API from a different port.
+origins = [
+    "http://localhost:5173",
+    "https://task-manager-git-main-shivendra4.vercel.app",
+    "https://task-manager-5qczo3261-shivendra4.vercel.app",
+    
+]
+
 app.add_middleware(
     CORSMiddleware,
-    # Vite selects the next free port if 5173 is already in use.
-    # Permit any local development port while keeping credentials enabled.
-    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
