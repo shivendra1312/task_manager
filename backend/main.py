@@ -17,6 +17,7 @@ app = FastAPI()
 origins = [
     "http://localhost:5173",
     "https://task-manager-shivendra4.vercel.app",
+    "https://task-manager-pi-dusky-20.vercel.app"
     
     
     
