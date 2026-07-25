@@ -16,8 +16,9 @@ app = FastAPI()
 # Allows the React development server to call this API from a different port.
 origins = [
     "http://localhost:5173",
-    "https://task-manager-git-main-shivendra4.vercel.app",
-    "https://task-manager-5qczo3261-shivendra4.vercel.app",
+    "https://task-manager-shivendra4.vercel.app",
+    
+    
     
 ]
 
